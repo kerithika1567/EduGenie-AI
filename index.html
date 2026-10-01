@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGenie - AI Learning Assistant</title>
+    <meta name="description" content="EduGenie is your intelligent AI-powered personal tutor for student Q&A, concept explanations, quizzes, summaries, and personalized learning paths.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="background-glow"></div>
+    
+    <div class="app-container">
+        <!-- Top Header Navigation -->
+        <header class="app-header">
+            <div class="logo-group">
+                <div class="logo-icon">✨</div>
+                <div>
+                    <h1 class="logo-title">EduGenie</h1>
+                    <p class="logo-subtitle">AI-Powered Personal Tutor & Learning Engine</p>
+                </div>
+            </div>
+            
+            <div class="header-status" id="systemStatus">
+                <span class="status-badge loading" id="statusBadge">Checking API...</span>
+            </div>
+        </header>
+
+        <!-- Notification / Error Banner -->
+        <div id="alertBanner" class="alert-banner hidden">
+            <span class="alert-icon" id="alertIcon">⚠️</span>
+            <span class="alert-message" id="alertMessage">System notification</span>
+            <button class="alert-close" onclick="hideAlert()">✕</button>
+        </div>
+
+        <!-- Main Tab Navigation Bar -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="qa-tab">
+                <span class="tab-icon">💬</span> Q&A Assistant
+            </button>
+            <button class="tab-btn" data-tab="explain-tab">
+                <span class="tab-icon">💡</span> Concept Explainer
+            </button>
+            <button class="tab-btn" data-tab="quiz-tab">
+                <span class="tab-icon">🎯</span> Quiz Generator
+            </button>
+            <button class="tab-btn" data-tab="summarize-tab">
+                <span class="tab-icon">📝</span> Text Summarizer
+            </button>
+            <button class="tab-btn" data-tab="path-tab">
+                <span class="tab-icon">🚀</span> Learning Path
+            </button>
+        </nav>
+
+        <main class="tab-content-container">
+            <!-- TAB 1: Q&A ASSISTANT -->
+            <section id="qa-tab" class="tab-pane active">
+                <div class="pane-header">
+                    <h2>Student Q&A Assistant</h2>
+                    <p>Ask any question about your studies, homework, or subjects for instant AI guidance.</p>
+                </div>
+
+                <form id="qaForm" class="card-form">
+                    <div class="form-group">
+                        <label for="qaQuestion">Your Question <span class="required">*</span></label>
+                        <textarea id="qaQuestion" rows="3" placeholder="e.g. How does photosynthesis work in plant cells?" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="qaContext">Optional Context or Subject</label>
+                        <input type="text" id="qaContext" placeholder="e.g. 10th Grade Biology / General Science">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="qaSubmitBtn">
+                        <span class="btn-text">Get Answer</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+
+                <div id="qaResult" class="result-card hidden">
+                    <div class="result-header">
+                        <h3>EduGenie's Answer</h3>
+                        <span class="badge" id="qaModelBadge">Gemini API</span>
+                    </div>
+                    <div class="result-body" id="qaAnswerBody"></div>
+                </div>
+            </section>
+
+            <!-- TAB 2: CONCEPT EXPLAINER -->
+            <section id="explain-tab" class="tab-pane">
+                <div class="pane-header">
+                    <h2>Beginner Concept Explainer</h2>
+                    <p>Get clear, beginner-friendly explanations with real-world analogies.</p>
+                </div>
+
+                <form id="explainForm" class="card-form">
+                    <div class="form-group">
+                        <label for="explainConcept">Concept to Explain <span class="required">*</span></label>
+                        <input type="text" id="explainConcept" placeholder="e.g. Quantum Entanglement, Recursion, Inflation" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="explainMode">Explanation Engine</label>
+                        <select id="explainMode">
+                            <option value="gemini" selected>Gemini API (Recommended)</option>
+                            <option value="local">Local LaMini-Flan-T5 Model (Optional with Fallback)</option>
+                        </select>
+                        <small class="help-text">If local model is uninstalled or unavailable, EduGenie automatically falls back to Gemini.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="explainSubmitBtn">
+                        <span class="btn-text">Explain Concept</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+
+                <div id="explainResult" class="result-card hidden">
+                    <div class="result-header">
+                        <h3>Concept Explanation</h3>
+                        <span class="badge" id="explainModeBadge">Engine</span>
+                    </div>
+                    <div id="explainWarning" class="warning-box hidden"></div>
+                    <div class="result-body" id="explainBody"></div>
+                </div>
+            </section>
+
+            <!-- TAB 3: QUIZ GENERATOR -->
+            <section id="quiz-tab" class="tab-pane">
+                <div class="pane-header">
+                    <h2>3-Question Practice Quiz</h2>
+                    <p>Generate an interactive 3-question multiple-choice quiz on any topic to test your knowledge.</p>
+                </div>
+
+                <form id="quizForm" class="card-form">
+                    <div class="form-group">
+                        <label for="quizTopic">Quiz Topic <span class="required">*</span></label>
+                        <input type="text" id="quizTopic" placeholder="e.g. Python Data Structures, World History, Calculus" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="quizSubmitBtn">
+                        <span class="btn-text">Generate 3-Question Quiz</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+
+                <div id="quizResult" class="result-card hidden">
+                    <div class="quiz-header-bar">
+                        <h3>Interactive Quiz: <span id="quizTopicTitle"></span></h3>
+                        <span class="badge">Exactly 3 Questions</span>
+                    </div>
+
+                    <div id="quizQuestionsContainer" class="quiz-questions-list"></div>
+
+                    <div class="quiz-action-bar">
+                        <button type="button" id="submitQuizAnswersBtn" class="btn btn-secondary">Submit Answers & Grade</button>
+                    </div>
+
+                    <div id="quizScoreCard" class="score-card hidden">
+                        <div class="score-number" id="scoreNumber">0 / 3</div>
+                        <div class="score-feedback" id="scoreFeedback">Good job!</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: TEXT SUMMARIZER -->
+            <section id="summarize-tab" class="tab-pane">
+                <div class="pane-header">
+                    <h2>Concise Text Summarizer</h2>
+                    <p>Paste long articles, textbook notes, or essays to extract core key points instantly.</p>
+                </div>
+
+                <form id="summarizeForm" class="card-form">
+                    <div class="form-group">
+                        <label for="summarizeText">Text to Summarize <span class="required">*</span></label>
+                        <textarea id="summarizeText" rows="6" placeholder="Paste your study text or notes here (minimum 10 characters)..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="summarizeLength">Summary Style</label>
+                        <select id="summarizeLength">
+                            <option value="short">Short (1-2 Key Bullets)</option>
+                            <option value="medium" selected>Medium (Balanced Summary)</option>
+                            <option value="detailed">Detailed (Comprehensive Points)</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="summarizeSubmitBtn">
+                        <span class="btn-text">Summarize Text</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+
+                <div id="summarizeResult" class="result-card hidden">
+                    <div class="result-header">
+                        <h3>Summary Output</h3>
+                        <div class="stats-pills">
+                            <span class="stat-pill" id="origWordCount">Original: 0 words</span>
+                            <span class="stat-pill highlight" id="summaryWordCount">Summary: 0 words</span>
+                        </div>
+                    </div>
+                    <div class="result-body" id="summarizeBody"></div>
+                </div>
+            </section>
+
+            <!-- TAB 5: LEARNING PATH -->
+            <section id="path-tab" class="tab-pane">
+                <div class="pane-header">
+                    <h2>Beginner-to-Advanced Learning Path</h2>
+                    <p>Generate a structured, step-by-step roadmap tailored to your experience level.</p>
+                </div>
+
+                <form id="pathForm" class="card-form">
+                    <div class="form-group">
+                        <label for="pathTopic">Topic / Field of Study <span class="required">*</span></label>
+                        <input type="text" id="pathTopic" placeholder="e.g. Machine Learning, Full-Stack Web Development, Data Science" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="pathLevel">Current Level</label>
+                            <select id="pathLevel">
+                                <option value="beginner" selected>Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pathGoal">Target Goal (Optional)</label>
+                            <input type="text" id="pathGoal" placeholder="e.g. Build a portfolio web app in 30 days">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="pathSubmitBtn">
+                        <span class="btn-text">Generate Learning Roadmap</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+
+                <div id="pathResult" class="result-card hidden">
+                    <div class="result-header">
+                        <h3>Learning Path: <span id="pathTopicTitle"></span></h3>
+                        <span class="badge" id="pathLevelBadge">Level</span>
+                    </div>
+
+                    <div id="pathTimeline" class="timeline-container"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>EduGenie AI Assistant &bull; Built with FastAPI & Gemini API</p>
+        </footer>
+    </div>
+
+    <!-- Application JS Script -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
